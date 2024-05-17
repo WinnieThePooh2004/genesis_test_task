@@ -30,6 +30,7 @@ func NewCronService(repository IRepository, settings settings.AppSettings, rates
 func (s *CronEmailService) Start() {
 	s.isRunning = true
 	go s.RunLoop()
+	s.runningChan <- struct{}{}
 }
 
 func (s *CronEmailService) Stop() {
@@ -59,6 +60,7 @@ func (s *CronEmailService) RunLoop() {
 
 func (s *CronEmailService) sendEmails(try int32) error {
 	subscriptions, err := s.repository.GetAll()
+
 	if err != nil {
 		if try > 3 {
 			return err
@@ -66,6 +68,10 @@ func (s *CronEmailService) sendEmails(try int32) error {
 
 		time.Sleep(10 * time.Second)
 		return s.sendEmails(try + 1)
+	}
+
+	if len(subscriptions) == 0 {
+		return nil
 	}
 
 	rate, err := s.currencyService.GetRate()
