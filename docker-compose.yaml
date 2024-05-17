@@ -1,0 +1,34 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - rates-app-network
+    volumes:
+      - ./setup_database.sql:/docker-entrypoint-initdb.d/init.sql
+  app:
+    depends_on:
+      - postgres
+    environment:
+      - CONNECTION_STRING=host=postgres user=postgres password=postgres dbname=nbu_rates port=5432
+    ports:
+      - "3000:3000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./appsettings.json:/app/appsettings.json
+    networks:
+      - rates-app-network
+
+networks:
+  rates-app-network:
+    driver: bridge
