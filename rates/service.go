@@ -31,5 +31,9 @@ func (s *NbuRatesService) GetRate() (float64, error) {
 		return 0, err
 	}
 
-	return rate[0].Rate, nil
+	if rate[0].Rate == 0 {
+		return 0, fmt.Errorf("nbu API returned rate 0")
+	}
+
+	return 1 / rate[0].Rate, nil
 }
